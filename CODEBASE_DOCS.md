@@ -5,8 +5,8 @@ This document provides a comprehensive analysis of the Ground Control Station We
 
 ### 1. System Architecture
 The application follows a **Daemon-Client (Service-Client) model** to ensure fault tolerance, a critical requirement for aerospace control software:
-- **GCS Daemon (Backend)**: Built with Python (`rxbackend.py`). Headless service responsible for connecting to the rocket's telemetry stream via a radio link (XBee/Serial), parsing, logging, and proxying data to the Referee Ground Station (RGS).
-- **GCS Client (Frontend)**: Real-time Web UI (`index.html`). Connects to the backend via WebSockets to visualize telemetry in real-time, displaying dynamic charts, recovery maps, and telemetry statuses. 
+- **GCS Daemon (Backend)**: Built with Python (`gcs_backend.py`). Headless service responsible for connecting to the rocket's telemetry stream via a radio link (XBee/Serial), parsing, logging, and proxying data to the Referee Ground Station (RGS).
+- **GCS Client (Frontend)**: Real-time Web UI (`gcs_dashboard.html`). Connects to the backend via WebSockets to visualize telemetry in real-time, displaying dynamic charts, recovery maps, and telemetry statuses. 
 
 ### 2. Tech Stack Setup
 - **Backend**:
@@ -21,12 +21,12 @@ The application follows a **Daemon-Client (Service-Client) model** to ensure fau
   - `Leaflet.js` for plotting GPS coordinates of the rocket and payload on a 2D map.
 
 ### 3. File Directory Structure 
-- `/main/rxbackend.py`: The core python server. Handles:
+- `/main/gcs_backend.py`: The core python server. Handles:
   - Connecting via `pyserial` to the RX (radio) and TX (RGS) ports.
   - Decoding XBee comma-separated data streams or raw 78-byte binary packets.
   - Recalculating checksums and appending derived metrics.
   - Transmitting the telemetry to all connected WebSocket clients.
-- `/main/index.html`: The main web interface for mission control. Includes panels for configuration, flight status, GPS mapping, metrics, and raw data logging.
+- `/main/gcs_dashboard.html`: The main web interface for mission control. Includes panels for configuration, flight status, GPS mapping, metrics, and raw data logging.
 - `/main/GCSInstruction.txt`: Official TEKNOFEST rules and instructions regarding GCS implementation.
 - `/main/requirements.txt`: Python package requirements.
 - `/Tests/`: Contains multiple Python scripts for simulating Arduino telemetry, testing TX port communication, and verifying Socket connections.
@@ -41,6 +41,6 @@ The radio link strictly handles a fixed 78-byte binary packet or a derived comma
 
 ### 5. Running the Application
 1. **Install dependencies**: `pip install -r requirements.txt`
-2. **Launch the backend server**: `python main/rxbackend.py` (Typically starts on `http://127.0.0.1:5000`)
-3. **Open UI**: Open `main/index.html` directly in any web browser.
+2. **Launch the backend server**: `python main/gcs_backend.py` (Typically starts on `http://127.0.0.1:5000`)
+3. **Open UI**: Open `main/gcs_dashboard.html` directly in any web browser.
 4. **Testing**: Run `python Tests/real_telemetry_simulator.py` to test the UI locally.

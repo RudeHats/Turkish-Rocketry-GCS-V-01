@@ -1,6 +1,6 @@
 # TEKNOFEST GCS Backend - Fixed Version
 
-This is a fixed version of the `rxbackend.py` that properly receives telemetry data from the backend, plots it in the frontend, and emits that same data to `/dev/ttyACM0` at 19200 baud rate.
+This is a fixed version of the `gcs_backend.py` that properly receives telemetry data from the backend, plots it in the frontend, and emits that same data to `/dev/ttyACM0` at 19200 baud rate.
 
 ## 🚀 Features
 
@@ -21,14 +21,14 @@ pip install flask flask-cors flask-socketio pyserial eventlet
 ### 1. Start the Backend Server
 
 ```bash
-python rxbackend.py
+python gcs_backend.py
 ```
 
 The server will start on `http://127.0.0.1:5000` and automatically attempt to connect to `/dev/ttyACM0` at 19200 baud.
 
 ### 2. Open the Frontend
 
-Open `index.html` in your web browser to view the real-time telemetry data.
+Open `gcs_dashboard.html` in your web browser to view the real-time telemetry data.
 
 ## 🔌 Port Configuration
 
@@ -168,7 +168,7 @@ The system can be configured via the `/api/config` endpoint:
 
 1. **Start the backend**:
    ```bash
-   python rxbackend.py
+   python gcs_backend.py
    ```
 
 2. **Connect Arduino** to a USB port (e.g., `/dev/ttyUSB0`)
@@ -180,7 +180,7 @@ The system can be configured via the `/api/config` endpoint:
      -d '{"port": "/dev/ttyUSB0", "baud": 19200}'
    ```
 
-4. **Open frontend** (`index.html`) to view real-time data
+4. **Open frontend** (`gcs_dashboard.html`) to view real-time data
 
 5. **Verify TX output** on `/dev/ttyACM0` at 19200 baud
 
