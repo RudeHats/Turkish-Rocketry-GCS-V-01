@@ -1,4 +1,7 @@
-# TEKNOFEST GCS Backend - Fixed Version
+# Team VAJRA - GCS v.0.1
+# TEKNOFEST MODEL ROCKETRY A4 CATEGORY 
+
+ - Gaurav Shahi, Anshuman Pathak 
 
 This is a fixed version of the `gcs_backend.py` that properly receives telemetry data from the backend, plots it in the frontend, and emits that same data to `/dev/ttyACM0` at 19200 baud rate.
 
