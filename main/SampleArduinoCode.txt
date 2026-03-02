@@ -1,0 +1,112 @@
+// For Arduino Nano (ATmega328) – compiles in Arduino IDE
+
+typedef union {
+  float f;
+  uint8_t b[4];
+} FloatUnion;
+
+uint8_t packet[78];
+unsigned long baseTime;
+
+void setup() {
+  Serial.begin(19200);
+  baseTime = millis();
+  randomSeed(analogRead(0)); // Seed randomness from floating analog pin
+}
+
+void loop() {
+  unsigned long now = millis();
+  float t = (now - baseTime) / 1000.0;
+
+  packet[0] = 0xFF;
+  packet[1] = 0xFF;
+  packet[2] = 0x54;
+  packet[3] = 0x52;
+
+  packet[4] = 690600; // Team ID
+  static uint8_t count = 0;
+  packet[5] = count++; // Counter (0–255)
+
+  // Realistically changing simulated sensor values
+  float alt = 1234.5 + 5.0 * sin(t / 5.0);                   // Base altitude
+  float rocketGpsAlt = alt + 2.0 * sin(t / 3.0);             // Slightly above alt
+
+  float rocketLat = 41.015234 + 0.00001 * sin(t / 60.0);     // Tiny drift
+  float rocketLon = 28.979530 + 0.00001 * cos(t / 60.0);
+
+  // Ensure payload is at least 3km (3000m) below rocket
+  float payloadOffset = 1.0 * sin(t / 7.0);                  // Small variation
+  float payloadGpsAlt = rocketGpsAlt - 3000.0 - abs(payloadOffset); // Enforced gap
+
+  float payloadLat = 41.015100 + 0.00001 * sin(t / 58.0);
+  float payloadLon = 28.979400 + 0.00001 * cos(t / 58.0);
+
+  float stageGpsAlt = alt - 25 + 2.0 * sin(t / 9.0);         // Even lower
+  float stageLat = 41.014900 + 0.00001 * sin(t / 55.0);
+  float stageLon = 28.979200 + 0.00001 * cos(t / 55.0);
+
+  float gyroX = 0.3 + 0.05 * sin(t);                         // Oscillating movement
+  float gyroY = -0.1 + 0.03 * cos(t / 2.0);
+  float gyroZ = 0.6 + 0.02 * sin(t / 1.5);
+
+  float accelX = -0.1 + 0.01 * sin(t / 2.0);                 // Simulated vibration
+  float accelY = 0.1 + 0.01 * cos(t / 2.0);
+  float accelZ = -0.9 + 0.02 * sin(t / 1.3);
+
+  float angle = 15.2 + 1.0 * sin(t / 6.0);                   // Slight attitude shift
+  uint8_t status = 4;
+
+  FloatUnion u;
+  int idx = 6;
+
+  float values[] = {
+    alt, rocketGpsAlt, rocketLat, rocketLon,
+    payloadGpsAlt, payloadLat, payloadLon,
+    stageGpsAlt, stageLat, stageLon,
+    gyroX, gyroY, gyroZ,
+    accelX, accelY, accelZ,
+    angle
+  };
+
+  for (int i = 0; i < 17; i++) {
+    u.f = values[i];
+    for (int b = 0; b < 4; b++) packet[idx++] = u.b[b];
+  }
+
+  packet[idx++] = status; // Byte 74
+
+  // Checksum from Byte 4 to Byte 74 (inclusive)
+  uint16_t checksum = 0;
+  for (int i = 4; i <= 74; i++) {
+    checksum += packet[i];
+  }
+  packet[idx++] = (uint8_t)(checksum % 256); // Byte 75
+
+  packet[idx++] = 0x0D;
+  packet[idx++] = 0x0A;
+
+  Serial.write(packet, 78);
+
+  // === Convert packet[] to unsigned long readings ===
+  unsigned long readings[20]; // Enough for all 4-byte groups
+  int countUL = 0;
+
+  for (int i = 0; i + 3 < 78; i += 4) {
+    unsigned long val = ((unsigned long)packet[i] << 24) |
+                        ((unsigned long)packet[i + 1] << 16) |
+                        ((unsigned long)packet[i + 2] << 8)  |
+                        ((unsigned long)packet[i + 3]);
+    readings[countUL++] = val;
+  }
+
+  Serial.println();
+  Serial.println(F("Packet as unsigned long values:"));
+  for (int i = 0; i < countUL; i++) {
+    Serial.print(F("UL["));
+    Serial.print(i);
+    Serial.print(F("] = "));
+    Serial.println(readings[i]);
+  }
+
+  delay(1000);
+}
